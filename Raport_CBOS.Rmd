@@ -1,0 +1,81 @@
+---
+title: "Raport_CBOS"
+author: "Anna Leśniewska"
+date: "12 października 2018"
+output: pdf_document
+---
+
+```{r}
+#read.csv("C:\\Users\\Ania\\Downloads\\CBOS_ogolnopolski.csv\\CBOS_ogolnopolski.csv", T, sep=";", dec=",")->dane
+attach(dane)
+V374.M18A_1..Miesięczne.dochodów.NETTO.źródła.resp..Stała.praca.najemna..etat..kontrakt.itp..[V2.Województwo=="POMORSKIE"]->zarobki
+V32.P5_9..Jak.często.w.ciągu.roku....czuł.a..Pan.i...że.nie.ma.wpływu.na.to..co.się.dzieje.w.Pana.i..życiu [V2.Województwo=="POMORSKIE"] ->wplyw
+
+zarobki[zarobki=="brak dochodów w tej kategorii"]<-NA
+zarobki[zarobki=="TAK"]<-NA
+zarobki[zarobki=="NIE"]<-NA
+zarobki[zarobki=="Nie pamiętam …"]<-NA
+zarobki[zarobki=="odmowa zarobkiowiedzi"]<-NA
+zarobki[zarobki=="Nie"]<-NA
+zarobki[zarobki=="Tak"]<-NA
+zarobki[zarobki==""]<-NA
+zarobki[zarobki=="Odmowa zarobkiowiedzi …"]<-NA
+zarobki[zarobki=="W dniu wyborów nie miałem ukończonych 18 lat.."]<-NA
+zarobki[zarobki=="Odmowa odpowiedzi …"]<-NA
+
+
+```
+
+```{r}
+zarobkiczyste<-zarobki[!is.na(zarobki)]
+zarobki.numeric<-as.numeric(levels(zarobkiczyste))[zarobkiczyste]
+zarobkic<-zarobkiczyste[which(zarobki.numeric<quantile(zarobki.numeric,0.96))]
+zarobki.num<-as.numeric(levels(zarobkic))[zarobkic]
+hist(zarobki.num)
+```
+
+```{r}
+wplyw<-as.numeric(wplyw)
+hist(wplyw)
+```
+
+```{r}
+zarobki.dataframe<-as.data.frame(zarobki)
+cbind(wplyw,zarobki.dataframe)->dane2
+dane2<-na.omit(dane2)
+
+dane2.matr<-as.matrix(dane2)
+plot(dane2.matr)
+```
+
+```{r}
+as.numeric(dane2[,1])->vector1
+as.numeric(dane2[,2])->vector2
+cbind(vector1,vector2)->vector_matrix
+vector_matrix[vector_matrix[,1]==1,]->p1
+vector_matrix[vector_matrix[,1]==2,]->p2
+vector_matrix[vector_matrix[,1]==3,]->p3
+vector_matrix[vector_matrix[,1]==4,]->p4
+vector_matrix[vector_matrix[,1]==5,]->p5
+
+sr_p1<-mean(p1)
+sr_p2<-mean(p2)
+sr_p3<-mean(p3)
+sr_p4<-mean(p4)
+sr_p5<-mean(p4)
+
+vector_sr<-c(sr_p1,sr_p2,sr_p3,sr_p4,sr_p5)
+labels<-c("wcale","prawie wcale","rzadko", "czesto","bardzo czesto")
+pie(as.table(vector_sr), labels= labels)
+```
+
+```{r}
+library("psych")
+
+v1<-dane2[,1];
+v2<-dane2[,2];
+v1<-as.numeric(v1)
+v2<-as.numeric(v2)
+
+tab2<-describeBy(v2,group=v1)
+```
